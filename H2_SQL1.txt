@@ -1,0 +1,82 @@
+											
+/* 1. 
+Managerial ingin mengetahui sejauh mana perkembangan atau
+ekspansi RakaFood sejauh ini. Tampilkan semua kota-kota unik 
+di mana pelanggan customer berasal!*/
+											
+select DISTINCT kota as kota_kota_unik from rakamin_customer_address			
+											
+/*2. 
+Tim Engineering baru saja melakukan update skema tabel order. 
+Tampilkan 10 baris transaksi terbaru (most recent) dari tabel 
+rakamin_order untuk melihat format dari tabel ini!*/
+
+SELECT * FROM rakamin_order								
+ORDER BY tanggal_pembelian desc							
+LIMIT 10										
+											
+/*3. 
+Tim Risk ingin mengetahui bagaimana performa sistem fraud detection
+yang telah berjalan selama ini, karena itu mereka ingin mengetahui berapa 
+banyak customer kita yang terdeteksi sebagai penipu sejauh ini? Tunjukkan 
+angka customer penipu yang terdapat di RakaFood!*/
+
+SELECT count(penipu) FROM rakamin_customer											
+where penipu = 1 									
+											
+
+/*4. 
+Tim Risk ingin mengetahui bagaimana performa sistem fraud detection
+yang telah berjalan selama ini, karena itu mereka ingin mengetahui berapa 
+banyak customer kita yang terdeteksi sebagai penipu sejauh ini? Tunjukkan 
+angka customer penipu yang terdapat di RakaFood!*/
+
+SELECT nama, email, umur, tanggal_registrasi,					
+	case when email like '%gmail.com' then 'Gmail'					
+	when email like '%yahoo.com' then 'Yahoo'					
+	when email like '%outlook.com'then 'Outlook'					
+	ELSE 'others'									
+	END AS email_platform								
+FROM rakamin_customer								
+where (tanggal_registrasi >= '2013-01-01' AND tanggal_registrasi <= '2013-06-30')	
+AND umur >= 17									
+ORDER BY email_platform 								
+											
+/*5. 
+Tampilkan perbandingan antara metode bayar OVO dan GOPAY 
+dalam hal: jumlah transaksi, spending (harga) terendah, rata-rata 
+spending (harga), spending (harga) tertinggi, dan total spending 
+(harga) khusus untuk transaksi yang dilakukan di merchant 
+CHICKEN WING (id_merchant = 3), KFC (id_merchant = 5) dan MCD 
+(id_merchant = 6)!*/
+
+SELECT metode_bayar,									
+   	count(kuantitas) as jumlah_transaksi, 						
+   	MIN(harga) as spending_terendah,						
+   	AVG(harga) as spending_rata2,							
+   	MAX(harga) as spending_tertinggi,						
+   	SUM(harga) as total_spending							
+   FROM rakamin_order									
+   WHERE id_merchant IN (3,5,6) AND metode_bayar IN ('ovo', 'gopay')			
+   GROUP BY metode_bayar								
+																	
+/*6.
+Buatlah tabel yang menunjukkan jumlah customer unik yang 
+dikelompokkan berdasarkan metode bayar (selain cash) dan juga 
+spending group, di mana spending group yang dimaksud adalah 
+sebagai berikut: 
+● Total transaksi (termasuk PPN) di bawah 30.000 : low spending,
+● 30.000 - 50.000 disebut medium spending
+● Di atas 50.000 disebut high spending.*/
+
+SELECT metode_bayar,									
+   	case when (harga * 1.1) < 30000 THEN 'low spending'				
+   	when (harga * 1.1) > 50000 THEN 'high spending'					
+   	else 'medium spending'								
+	END AS spending_group,								
+COUNT(DISTINCT id_pelanggan) AS jumlah_pelanggan_unik				
+FROM rakamin_order									
+where metode_bayar != 'cash'								
+GROUP BY metode_bayar, spending_group						
+											
+
